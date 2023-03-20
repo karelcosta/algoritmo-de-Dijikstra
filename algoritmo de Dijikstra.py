@@ -1,33 +1,46 @@
 import heapq
 
-def dijkstra(grafo, start):
-    dis = {no: float('inf') for no in grafo}  
-    dis[start] = 0  
-    heap = [(0, start)]  
+class Grafo:
+    def __init__(self):
+        self.rota = []
+        self.vertices = {}
 
-    while heap:
-        (dis_atual, no_atual) = heapq.heappop(heap)  
-        if dis_atual > dis[no_atual]: 
-            continue
-        for vizinho, peso in grafo[no_atual].items():
-            distancia = dis_atual + peso  
-            if distancia < dis[vizinho]:  
-                dis[vizinho] = distancia  
-                heapq.heappush(heap, (distancia, vizinho))  
+    def add_vertice(self, nome, vizinhos):
+        self.vertices[nome] = vizinhos
 
-    menor_dis = sorted(dis.items(), key=lambda x: x[1])
-    return menor_dis
+    def dijkstra(self, inicio, fim):
+        distancias = {inicio: 0}
+        heap = [(0, inicio)]
+        visitados = set()
+        rota = True
 
-# o dicionario grafo serve para informar todos os pontos e as distancias que ele tem para os proximos pontos
-grafo = {
-    'A': {'B': 7, 'C': 2},
-    'B': {'A': 7, 'C': 2, 'D': 1},
-    'C': {'A': 2, 'B': 2, 'D': 4, 'E': 3},
-    'D': {'B': 1, 'C': 4, 'E': 3, 'F': 7},
-    'E': {'C': 3, 'D': 3, 'F': 9},
-    'F': {'D': 7, 'G': 4},
-    'G': {'F': 4}
-}
+        while heap:
+            (dist, atual) = heapq.heappop(heap)
 
-menor_dis = dijkstra(grafo, 'A')
-print(menor_dis)  
+            if atual in visitados:
+                continue
+
+            visitados.add(atual)
+
+            for proximo, peso in self.vertices[atual].items():
+                distancia = dist + peso
+                if proximo not in distancias or distancia < distancias[proximo]:
+                    distancias[proximo] = distancia
+                    heapq.heappush(heap, (distancia, proximo))
+
+            if atual == fim:
+                rota = False
+            if rota:
+                self.rota.append(atual)
+        self.rota.append(fim)
+        
+        return distancias.get(fim)
+
+grafo = Grafo()
+grafo.add_vertice('A', {'B': 4, 'C': 1})
+grafo.add_vertice('B', {'A': 4, 'C': 2, 'D': 5})
+grafo.add_vertice('C', {'A': 1, 'B': 2, 'D': 1})
+grafo.add_vertice('D', {'B': 5, 'C': 1})
+
+print(grafo.dijkstra('A', 'D')) # Output: 3
+print(grafo.rota)
